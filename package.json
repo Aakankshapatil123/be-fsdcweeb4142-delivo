@@ -28,6 +28,7 @@
   "homepage": "https://github.com/Aakankshapatil123/be-fsdcweeb4142-delivo#readme",
   "dependencies": {
     "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "mongoose": "^9.9.1"
   }
 }
