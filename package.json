@@ -1,0 +1,33 @@
+{
+  "name": "be-fsdcweeb4142-delivo",
+  "version": "1.0.0",
+  "description": "This is a food delivery platform that is bulid using React for the frontend and Node,js with Express for the backend\"",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aakankshapatil123/be-fsdcweeb4142-delivo.git"
+  },
+  "keywords": [
+    "nodejs",
+    "expressjs",
+    "mongodb",
+    "dotenv",
+    "jsonwebtoken",
+    "mongoose",
+    "resfulapi"
+  ],
+  "author": "Aakanksha Patil",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Aakankshapatil123/be-fsdcweeb4142-delivo/issues"
+  },
+  "homepage": "https://github.com/Aakankshapatil123/be-fsdcweeb4142-delivo#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "mongoose": "^9.9.1"
+  }
+}
