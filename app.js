@@ -7,9 +7,13 @@ const userController = require("./controllers/userController");
 const userRouter = require("./routes/userRouter");
 const restaurantOwnerRouter = require("./routes/restaurantOwnerRouter");
 const paymentRouter = require("./routes/paymentRouter");
+const notificationRouter = require("./routes/notificationRouter");
 
 // create express application
 const app = express();
+
+// enable static files for uploads
+app.use("/uploads", express.static('uploads'))
 
 // parse cookies
 app.use(cookieParser());
@@ -23,6 +27,7 @@ app.use('/api/v1/restaurant', restaurantRouter)
 app.use("/api/v1/user", userRouter)
 app.use("/api/v1/restaurantOwner", restaurantOwnerRouter)
 app.use("/api/v1/payment", paymentRouter)
+app.use("/api/v1/notifications", notificationRouter)
 
 // export application
 module.exports = app;

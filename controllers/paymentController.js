@@ -1,6 +1,7 @@
 const Order = require("../models/order")
 const Razorpay = require("razorpay")
 const crypto = require("crypto")
+const Notification = require("../models/notification")
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -12,15 +13,11 @@ const paymentController = {
     try {
        
         const { orderId } = request.body
-         console.log("ORDER ID:", orderId);
-            console.log("USER ID:", request.userId);
 
         const order = await Order.findOne({
             _id: orderId,
             user: request.userId
         });
-
-        console.log("ORDER:", order);
 
         if (!order) {
             return response.status(404).json({ message: "Order not found" });
@@ -39,8 +36,6 @@ const paymentController = {
         });
 
 
-            console.log("RAZORPAY ORDER:", razorpayOrder);
-
         order.paymentOrderId = razorpayOrder.id;
 
         await order.save();
@@ -50,7 +45,7 @@ const paymentController = {
         });
 
     }catch(e) {
-        console.log("PAYMENT ERROR:", e);
+      
         return response.status(500).json({message: e.message})
     }
   },
@@ -75,10 +70,14 @@ const paymentController = {
                 message: "Order not found"
         });
 
-        
-        return response.status(200).json({
-            message: "Payment order created successfully",result: razorpayOrder
-        });
+        }
+
+        if (order.paymentOrderId !== razorpay_order_id) {
+            return response.status(400).json({
+                    message: "Invalid Razorpay order ID"
+            });
+        }
+       
 
         const generatedSignature = crypto.createHmac(
             "sha256",
@@ -103,14 +102,20 @@ const paymentController = {
 
         await order.save();
 
+        await Notification.create({ user: order.user, message: "Your payment was successful", type: "payment" });
+
+        await Notification.create({
+            user: order.user,
+            message: "Your payment was successful",
+            type: "payment"
+        });
+
          return response.status(200).json({
             message: "Payment verified successfully",
             result: order
         });
 
-    } 
-    
-}      catch (e) {
+    }catch (e) {
         console.log("PAYMENT ERROR:", e);
         return response.status(500).json({message: e.message})
     }

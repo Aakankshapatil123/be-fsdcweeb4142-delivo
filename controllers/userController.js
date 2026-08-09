@@ -3,6 +3,8 @@ const Restaurant = require("../models/restaurant")
 const Order = require("../models/order");
 const Review = require("../models/review")
 const User = require("../models/user")
+const Notification = require("../models/notification")
+const upload = require("../middlewares/Upload")
 
 const userController = {
     getRestaurants: async (request, response) => {
@@ -53,6 +55,12 @@ const userController = {
             });
 
             const savedOrder = await newOrder.save();
+
+            await Notification.create({
+                user: request.userId,
+                message: "Your order has been placed successfully",
+                type: "order"
+            })
 
             const {__v, ...result} = savedOrder.toObject();
 
@@ -180,7 +188,7 @@ const userController = {
 
     updateProfile: async (request, response) => {
         try{
-            const { name, phone, profilePicture, location, notificationEnabled } = request.body
+            const { name, phone, location, notificationEnabled } = request.body
 
             const user = await User.findById(request.userId)
 
@@ -188,15 +196,21 @@ const userController = {
             return response.status(404).json({ message: "User not found"});
         }
 
+        let image = user.profilePicture;
+
+        if (request.file) {
+            image = `/uploads/profiles/${request.file.filename}`;
+        }
+
         const updateProfile = await User.findByIdAndUpdate(
             user._id,
             {
             name, 
             phone, 
-            profilePicture, 
+            profilePicture:image,
             location, 
             notificationEnabled
-        }, {new:user})
+        }, {new: true})
 
          const { password, __v, ...result } = updateProfile.toObject();
 

@@ -1,6 +1,8 @@
 const express = require("express");
 const { isAuthenticated, allowRoles } = require("../middlewares/auth");
-const { createRestaurant, getAllRestaurants, getRestaurantById, updateRestaurants, deleteRestaurants, getAllUsers, getUserById, deleteUser, getAllOrders, updateOrderStatus, getOrderById, getAllReviews, deleteReview, getDashboardStats, getDashboardStatistics } = require("../controllers/adminController");
+const { createRestaurant, getAllRestaurants, getRestaurantById, updateRestaurants, deleteRestaurants, getAllUsers, getUserById, deleteUser, getAllOrders, updateOrderStatus, getOrderById, getAllReviews, deleteReview,  getDashboardStatistics } = require("../controllers/adminController");
+
+const upload = require("../middlewares/Upload")
 
 const restaurantRouter = express.Router();
 
@@ -9,7 +11,7 @@ restaurantRouter.use(isAuthenticated);
 restaurantRouter.use(allowRoles(["admin"]))
 
 // restaurant
-restaurantRouter.post("/", createRestaurant)
+restaurantRouter.post("/", upload.single("restaurantImage"),createRestaurant)
 restaurantRouter.get("/", getAllRestaurants)
 
 // users
@@ -30,6 +32,8 @@ restaurantRouter.delete("/reviews/:id", deleteReview)
 
 // dashboard
 restaurantRouter.get("/dashboard", getDashboardStatistics)
+
+
 
 //  Restaurant by ID
 restaurantRouter.get("/:id", getRestaurantById)

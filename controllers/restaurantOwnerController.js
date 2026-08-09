@@ -1,6 +1,8 @@
 const Restaurant = require("../models/restaurant")
 const Menu = require("../models/menu")
 const Order = require("../models/order");
+const Notification = require("../models/notification")
+const upload = require("../middlewares/Upload")
 
 
 const restaurantOwnerController = {
@@ -27,14 +29,18 @@ const restaurantOwnerController = {
 
     updateRestaurantProfile: async (request, response) => {
        try{
-        const { name, description, cuisine, location, openingHours, image, priceRange, isOpen } = request.body
+        const { name, description, cuisine, location, openingHours, priceRange, isOpen } = request.body
         
-        const restaurant = await Restaurant.findOne({
-            owner: request.userId
-        });
+        const restaurant = await Restaurant.findById(request.params.id);
 
         if(!restaurant) {
             return response.status(401).json({message: "Restaurant not found"})
+        }
+
+        let image = restaurant.image;
+
+        if (request.file) {
+            image = `/uploads/restaurants/${request.file.filename}`;
         }
         
         const updateProfile = await Restaurant.findByIdAndUpdate(
@@ -48,7 +54,9 @@ const restaurantOwnerController = {
             image, 
             priceRange, 
             isOpen
-        }, {new: true})
+        }, {new: true,
+            runValidators: true
+        })
  
 
         return response.status(200).json({ message: "Profile update successfully",result: updateProfile });
@@ -60,7 +68,7 @@ const restaurantOwnerController = {
 
     createMenu: async (request, response) => {
        try{
-            const { name, description, category, price, image,  isAvailable } = request.body
+            const { name, description, category, price, isAvailable } = request.body
 
             const restaurant = await Restaurant.findOne({ 
                 owner: request.userId
@@ -74,7 +82,9 @@ const restaurantOwnerController = {
 
             if (menuExisting) { 
                 return response.status(400).json({ message: "Menu already exists" });
-        }
+        }   
+
+            const image = request.file ? `/uploads/menu/${request.file.filename}`: "";
 
             const newMenu = new Menu({
                 restaurant: restaurant._id, 
@@ -123,7 +133,7 @@ const restaurantOwnerController = {
        try{
            const { id } = request.params
 
-           const { name, description, category, price, image, isAvailable } = request.body;
+           const { name, description, category, price,isAvailable } = request.body;
 
            const restaurant = await Restaurant.findOne({ 
             owner: request.userId 
@@ -140,6 +150,12 @@ const restaurantOwnerController = {
 
             if (!menu) {
               return response.status(404).json({ message: "Menu not found" });
+            }
+
+            let image = menu.image;
+
+            if (request.file) {
+              image = `/uploads/menu/${request.file.filename}`;
             }
 
             const updateMenu = await Menu.findByIdAndUpdate(
@@ -243,6 +259,12 @@ const restaurantOwnerController = {
                 runValidators: true
             }
         );
+
+        await Notification.create({
+          user: order.user,
+          message: `Your order status is now ${orderStatus}`,
+           type: "order"
+        });
 
         return response.status(200).json({ message:  "Order status updated successfully", result: updatedOrder });
 

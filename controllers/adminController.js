@@ -9,9 +9,14 @@ const adminController = {
   createRestaurant : async (request, response) => {
     try{
         // get name description cuisine location openingHours to the reques body
-        const {   name, description, cuisine, location, openingHours, image, priceRange } =request.body
+        const {   name, description, cuisine, location, openingHours, priceRange } =request.body
 
         const restaurantExists = await Restaurant.findOne({name});
+
+         // Get uploaded restaurant image
+        const image = request.file
+            ? `/uploads/restaurants/${request.file.filename}`
+            : "";
 
         if(restaurantExists){
             return response.status(400).json({message: "Restaurant alrady exist"})
@@ -23,7 +28,7 @@ const adminController = {
             cuisine, 
             location, 
             openingHours, 
-            image, 
+            image:image,
             priceRange,
             owner: request.user._id
         })
@@ -275,6 +280,8 @@ const adminController = {
             return response.status(500).json({ message: e.message });
         }
     },
+
+    
    
 }   
 
