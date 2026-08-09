@@ -6,6 +6,7 @@ const restaurantRouter = require("./routes/restaurantRouter");
 const userController = require("./controllers/userController");
 const userRouter = require("./routes/userRouter");
 const restaurantOwnerRouter = require("./routes/restaurantOwnerRouter");
+const paymentRouter = require("./routes/paymentRouter");
 
 // create express application
 const app = express();
@@ -21,6 +22,7 @@ app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/restaurant', restaurantRouter)
 app.use("/api/v1/user", userRouter)
 app.use("/api/v1/restaurantOwner", restaurantOwnerRouter)
+app.use("/api/v1/payment", paymentRouter)
 
 // export application
 module.exports = app;

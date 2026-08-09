@@ -219,9 +219,58 @@ const adminController = {
         }
     },
     
-    getDashboardStats: async (request, response) => {
+    getDashboardStatistics: async (request, response) => {
         try {
-            return response.status(200).json({ message: "delete company endpoint" });
+            const totalUsers = await User.countDocuments({
+                role: "user"
+            })
+
+            const totalRestaurants = await Restaurant.countDocuments();
+
+            const totalOrders = await Order.countDocuments();
+
+            const pendingOrders = await Order.countDocuments({
+                orderStatus: "Pending"
+            });
+
+            const deliveregOrders = await Order.countDocuments({
+                orderStatus: "Delivered"
+            });
+
+            const cancleOrders = await Order.countDocuments({
+                orderStatus: "Cancelled"
+            });
+
+            const revenueResult = await Order.aggregate([
+            {
+                $match: {
+                    paymentStatus: "Paid"
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: {
+                        $sum: "$totalAmount"
+                    }
+                }
+            }
+        ]);
+
+        const totalRevenue = revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
+
+        return response.status(200).json({
+            message: "Dashboard statistics fetched successfully",
+            result: {
+                totalUsers,
+                totalRestaurants,
+                totalOrders,
+                totalRevenue,
+                pendingOrders,
+                deliveregOrders,
+                cancleOrders
+            }
+        });
         } catch (e) {
             return response.status(500).json({ message: e.message });
         }

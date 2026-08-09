@@ -1,6 +1,6 @@
 const express = require("express");
 const { isAuthenticated, allowRoles } = require("../middlewares/auth");
-const { createRestaurant, getAllRestaurants, getRestaurantById, updateRestaurants, deleteRestaurants, getAllUsers, getUserById, deleteUser, getAllOrders, updateOrderStatus, getOrderById, getAllReviews, deleteReview, getDashboardStats } = require("../controllers/adminController");
+const { createRestaurant, getAllRestaurants, getRestaurantById, updateRestaurants, deleteRestaurants, getAllUsers, getUserById, deleteUser, getAllOrders, updateOrderStatus, getOrderById, getAllReviews, deleteReview, getDashboardStats, getDashboardStatistics } = require("../controllers/adminController");
 
 const restaurantRouter = express.Router();
 
@@ -29,7 +29,7 @@ restaurantRouter.delete("/reviews/:id", deleteReview)
 
 
 // dashboard
-restaurantRouter.get("/", getDashboardStats)
+restaurantRouter.get("/dashboard", getDashboardStatistics)
 
 //  Restaurant by ID
 restaurantRouter.get("/:id", getRestaurantById)
