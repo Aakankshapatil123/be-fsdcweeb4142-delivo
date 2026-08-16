@@ -6,7 +6,7 @@ const notificationController = {
             const notifications = await Notification.find({
                 user: request.userId
             })
-            .sort({ createAt: -1})
+            .sort({ createdAt: -1})
 
             return response.status(200).json({
                 message: "Notifications fetched successfully",
@@ -21,7 +21,7 @@ const notificationController = {
 
     markAsRead: async (request, response) => {
         try{
-            const notifications = await Notification.findByIdAndUpdate({
+            const notifications = await Notification.findOneAndUpdate({
                 _id: request.params.id,
                 user: request.userId
             },

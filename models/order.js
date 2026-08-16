@@ -1,114 +1,142 @@
 const mongoose = require("mongoose");
 
-const orderSchema = new mongoose.Schema({
+const orderSchema = new mongoose.Schema(
+  {
     user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required:true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
 
     restaurant: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required:true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Restaurant",
+      required: true,
     },
 
     items: [
-        {
-            name: {
-                type: String,
-                required: true
-            },
+      {
+        name: {
+          type: String,
+          required: true,
+        },
 
-            quantity: {
-                type: Number,
-                required: true,
-                min: 1
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+
+        price: {
+          type: Number,
+          required: true,
+        },
+
+        extras: [
+          {
+            name: {
+              type: String,
+              required: true,
             },
 
             price: {
-                type: Number,
-                required: true
+              type: Number,
+              required: true,
+              min: 0,
             },
+          },
+        ],
 
-            specialInstructions: {
-                type: String,
-                default: ""
-            }
-        }
+        specialInstructions: {
+          type: String,
+          default: "",
+        },
+      },
     ],
 
     totalAmount: {
-        type: Number,
-        required: true
+      type: Number,
+      required: true,
     },
 
     paymentMethod: {
-        type: String,
-        enum: ["Cash on Delivery", "UPI", "Card"],
-        required: true
+      type: String,
+      enum: ["Cash on Delivery", "UPI", "Card"],
+      required: true,
     },
 
     paymentStatus: {
-        type: String,
-        enum: ["Pending", "Paid", "Failed"],
-        default: "Pending"
+      type: String,
+      enum: ["Pending", "Paid", "Failed"],
+      default: "Pending",
     },
 
     orderStatus: {
-        type: String,
-        enum: [
-            "Pending",
-            "Preparing",
-            "Out for Delivery",
-            "Delivered",
-            "Cancelled"
-        ],
-        default: "Pending"
+      type: String,
+      enum: [
+        "Pending",
+        "Preparing",
+        "Out for Delivery",
+        "Delivered",
+        "Cancelled",
+      ],
+      default: "Pending",
     },
-    
-     deliveryType: {
-        type: String,
-        enum: ["Immediate", "Scheduled"],
-        default: "Immediate"
+
+    deliveryType: {
+      type: String,
+      enum: ["Immediate", "Scheduled"],
+      default: "Immediate",
     },
 
     scheduledDeliveryTime: {
-        type: Date
+      type: Date,
     },
-    
+
     deliveryAddress: {
-        address: {
-            type: String,
-            required: true
-        },
+      address: {
+        type: String,
+        required: true,
+      },
 
-        city: {
-            type: String,
-            required: true
-        },
+      city: {
+        type: String,
+        required: true,
+      },
 
-        state: {
-            type: String,
-            required: true
-        },
+      state: {
+        type: String,
+        required: true,
+      },
 
-        pincode: {
-            type: String,
-            required: true
-        }
+      pincode: {
+        type: String,
+        required: true,
+      },
     },
 
     paymentId: {
-        type: String,
-        default: ""
+      type: String,
+      default: "",
     },
 
     paymentOrderId: {
-       type: String,
-       default: ""
-    }
+      type: String,
+      default: "",
+    },
 
-},{ timestamps: true})
+    paymentAmount: {
+      type: Number,
+      default: 0,
+    },
 
-module.exports = mongoose.model("Order", orderSchema, "orders")
+    paidAt: {
+      type: Date,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+module.exports = mongoose.model("Order", orderSchema, "orders");

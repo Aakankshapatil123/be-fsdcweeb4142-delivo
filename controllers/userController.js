@@ -1,226 +1,584 @@
-const { getAllRestaurants } = require("./adminController")
-const Restaurant = require("../models/restaurant")
+const { getAllRestaurants } = require("./adminController");
+const Restaurant = require("../models/restaurant");
 const Order = require("../models/order");
-const Review = require("../models/review")
-const User = require("../models/user")
-const Notification = require("../models/notification")
-const upload = require("../middlewares/Upload")
+const Review = require("../models/review");
+const User = require("../models/user");
+const Notification = require("../models/notification");
+const upload = require("../middlewares/Upload");
 
 const userController = {
-    getRestaurants: async (request, response) => {
-        try{
-            const restaurant = await Restaurant.find().select("-password -__v");
+  getRestaurants: async (request, response) => {
+    try {
+      const restaurants = await Restaurant.find().select("-password -__v");
 
-            return response.status(200).json({message: restaurant})
-        }catch(e) {
-         return response.status(500).json({message: e.message})
-        }
-    },
+      return response.status(200).json({ restaurants });
+    } catch (e) {
+      return response.status(500).json({ message: e.message });
+    }
+  },
 
-    getRestaurantById: async (request, response) => {
-        try{
-            const { id } = request.params;
+  getRestaurantById: async (request, response) => {
+    try {
+      const { id } = request.params;
 
-            const restaurant = await Restaurant.findById(id);
+      const restaurant = await Restaurant.findById(id);
 
-             if(!restaurant){
-                return response.status(404).json({message: "Restaurant not found"})
-            }
+      if (!restaurant) {
+        return response.status(404).json({ message: "Restaurant not found" });
+      }
 
-            return response.status(200).json({message: restaurant})
-        }catch(e) {
-         return response.status(500).json({message: e.message})
-        }
-    },
+      return response.status(200).json({ restaurant });
+    } catch (e) {
+      return response.status(500).json({ message: e.message });
+    }
+  },
 
-    createOrder: async (request, response) => {
-        try{
-           const {restaurant,  items, totalAmount, paymentMethod, deliveryType, scheduledDeliveryTime, deliveryAddress } = request.body;
+  createOrder: async (request, response) => {
+    try {
+      const {
+        restaurant,
+        items,
+        totalAmount,
+        paymentMethod,
+        deliveryType = "Immediate",
+        scheduledDeliveryTime,
+        deliveryAddress,
+      } = request.body;
 
-           const restaurantExisting = await Restaurant.findById(restaurant);
-           
-            if(!restaurantExisting){
-                return response.status(404).json({message: "Restaurant not found"})
-            }
+      if (!restaurant) {
+        return response.status(400).json({
+          message: "Restaurant is required",
+        });
+      }
 
-            const newOrder = new Order({
-                user:request.userId,
-                restaurant,  
-                items, 
-                totalAmount, 
-                paymentMethod, 
-                deliveryType, 
-                scheduledDeliveryTime, 
-                deliveryAddress
-            });
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return response.status(400).json({
+          message: "At least one order item is required",
+        });
+      }
 
-            const savedOrder = await newOrder.save();
+      if (totalAmount === undefined || totalAmount === null) {
+        return response.status(400).json({
+          message: "Total amount is required",
+        });
+      }
 
-            await Notification.create({
-                user: request.userId,
-                message: "Your order has been placed successfully",
-                type: "order"
-            })
+      if (!paymentMethod) {
+        return response.status(400).json({
+          message: "Payment method is required",
+        });
+      }
 
-            const {__v, ...result} = savedOrder.toObject();
+      if (!deliveryAddress) {
+        return response.status(400).json({
+          message: "Delivery address is required",
+        });
+      }
 
-            return response.status(200).json({message: "Order place successfully", result})
-        }catch(e) {
-         return response.status(500).json({message: e.message})
-        }
-    },
+      const restaurantExisting = await Restaurant.findById(restaurant);
 
-    getOrderById: async (request, response) => {
-        try{
-            const { id } = request.params
+      if (!restaurantExisting) {
+        return response.status(404).json({ message: "Restaurant not found" });
+      }
 
-            const order = await Order.findById({
-                _id: id,
-                user: request.userId
-            })  
-            .populate("restaurant", "name cuisine location")        
-            
+      if (deliveryType === "Scheduled" && !scheduledDeliveryTime) {
+        return response.status(400).json({
+          message: "Scheduled delivery time is required",
+        });
+      }
 
-             if (!order) {
-                 return response.status(404).json({ message: "Order not found" });
-                }
+      const orderItems = items.map((item) => ({
+        name: item.name,
 
-            return response.status(200).json({message: " Order fetched successfully", result: order})
-        }catch(e) {
-         return response.status(500).json({message: e.message})
-        }
-    },
+        quantity: Number(item.quantity),
 
-    getMyOrders: async (request, response) => {
-        try{
-            const orders = await Order.find({
-                user: request.userId
-            })  
-            .populate("restaurant", "name cuisine location")
-            .sort({ createdAt: -1}) ;        
+        price: Number(item.price),
 
-            return response.status(200).json({message: "My orders fetched successfully", result: orders})
-        }catch(e) {
-         return response.status(500).json({message: e.message})
-        }
-    },
+        extras: Array.isArray(item.extras)
+          ? item.extras.map((extra) => ({
+              name: extra.name,
+              price: Number(extra.price),
+            }))
+          : [],
 
-    cansalOrders: async (request, response) => {
-        try{
-           const { id } = request.params
+        specialInstructions: item.specialInstructions?.trim() || "",
+      }));
 
-           const order = await Order.findById(id);
+      const newOrder = new Order({
+        user: request.userId,
+        restaurant,
+        items: orderItems,
+        totalAmount: Number(totalAmount),
+        paymentMethod,
+        deliveryType,
+        scheduledDeliveryTime:
+          deliveryType === "Scheduled" ? scheduledDeliveryTime : undefined,
+        deliveryAddress,
+      });
 
-            if (!order) {
-            return response.status(404).json({
-                message: "Order not found"
-            });
-        }
+      const savedOrder = await newOrder.save();
 
-        // User can cancel only their own order
-        if (order.user.toString() !== request.userId) {
-            return response.status(403).json({
-                message: "You are not authorized to cancel this order"
-            });
-        }
+      await Notification.create({
+        user: request.userId,
+        message: "Your order has been placed successfully",
+        type: "order",
+      });
 
-        // Cannot cancel after delivery 
-        if(
-            order.orderStatus === "Delivered" || 
-            order.orderStatus === "Cancelled"
-        ) {
-             return response.status(400).json({
-                message: "Order cannot be cancelled"
-            });
-        }
+      const { __v, ...result } = savedOrder.toObject();
 
+      return response
+        .status(200)
+        .json({ message: "Order place successfully", result });
+    } catch (e) {
+      return response.status(500).json({ message: e.message });
+    }
+  },
 
-        order.orderStatus = 'Cancelled';
+  getOrderById: async (request, response) => {
+    try {
+      const { id } = request.params;
+
+      const order = await Order.findOne({
+        _id: id,
+        user: request.userId,
+      }).populate("restaurant", "name cuisine location");
+
+      if (!order) {
+        return response.status(404).json({ message: "Order not found" });
+      }
+
+      return response
+        .status(200)
+        .json({ message: " Order fetched successfully", result: order });
+    } catch (e) {
+      return response.status(500).json({ message: e.message });
+    }
+  },
+
+  getMyOrders: async (request, response) => {
+    try {
+      const orders = await Order.find({
+        user: request.userId,
+      })
+        .populate("restaurant", "name cuisine location")
+        .sort({ createdAt: -1 });
+
+      return response
+        .status(200)
+        .json({ message: "My orders fetched successfully", result: orders });
+    } catch (e) {
+      return response.status(500).json({ message: e.message });
+    }
+  },
+
+  cansalOrders: async (request, response) => {
+    try {
+      const { id } = request.params;
+
+      const order = await Order.findById(id);
+
+      if (!order) {
+        return response.status(404).json({
+          message: "Order not found",
+        });
+      }
+
+      // User can cancel only their own order
+      if (order.user.toString() !== request.userId) {
+        return response.status(403).json({
+          message: "You are not authorized to cancel this order",
+        });
+      }
+
+      // Cannot cancel after delivery
+      if (
+        order.orderStatus === "Delivered" ||
+        order.orderStatus === "Cancelled"
+      ) {
+        return response.status(400).json({
+          message: "Order cannot be cancelled",
+        });
+      }
+
+      const orderTime = new Date(order.createdAt).getTime();
+      const currentTime = Date.now();
+
+      const differenceInMinutes = (currentTime - orderTime) / (1000 * 60);
+
+      if (differenceInMinutes >= 30) {
+        return response.status(400).json({
+          message: "Order cannot be cancelled after 30 minutes",
+        });
+
+        order.orderStatus = "Cancelled";
 
         await order.save();
 
-            return response.status(200).json({message: "Order canclled successfully", result: order})
-        }catch(e) {
-         return response.status(500).json({message: e.message})
+        return response
+          .status(200)
+          .json({ message: "Order canclled successfully", result: order });
+      }
+    } catch (e) {
+      return response.status(500).json({ message: e.message });
+    }
+  },
+
+  getRestaurantReviews: async (request, response) => {
+    try {
+      const { id } = request.params;
+
+      console.log("Restaurant ID received:", id);
+
+      const restaurant = await Restaurant.findById(id);
+
+      console.log("Restaurant found:", restaurant);
+
+      if (!restaurant) {
+        return response.status(404).json({
+          message: "Restaurant not found",
+        });
+      }
+
+      const reviews = await Review.find({
+        restaurant: restaurant._id,
+      })
+        .populate("user", "name email profilePicture")
+        .sort({ createdAt: -1 });
+
+      return response.status(200).json({
+        message: "Restaurant reviews fetched successfully",
+        restaurant: {
+          _id: restaurant._id,
+          name: restaurant.name,
+          image: restaurant.image,
+        },
+        totalReviews: reviews.length,
+        result: reviews,
+      });
+    } catch (e) {
+      console.log("Get Restaurant Reviews Error:", e);
+
+      return response.status(500).json({
+        message: e.message,
+      });
+    }
+  },
+
+  addReviwes: async (request, response) => {
+    try {
+      const { restaurant, rating, comment } = request.body;
+
+      // Required fields
+      if (!restaurant || rating === undefined || !comment) {
+        return response.status(400).json({
+          message: "Restaurant, rating and comment are required",
+        });
+      }
+
+      // Rating validation
+      if (rating < 1 || rating > 5) {
+        return response.status(400).json({
+          message: "Rating must be between 1 and 5",
+        });
+      }
+
+      // Check restaurant exists
+      const restaurantExisting = await Restaurant.findById(restaurant);
+
+      if (!restaurantExisting) {
+        return response.status(404).json({
+          message: "Restaurant not found",
+        });
+      }
+
+      // Check user already reviewed this restaurant
+      const existingReview = await Review.findOne({
+        user: request.userId,
+        restaurant: restaurant,
+      });
+
+      if (existingReview) {
+        return response.status(400).json({
+          message: "You have already reviewed this restaurant",
+        });
+      }
+
+      // Create review
+      const newReview = new Review({
+        user: request.userId,
+        restaurant: restaurant,
+        rating: Number(rating),
+        comment: comment.trim(),
+      });
+
+      const saveReview = await newReview.save();
+
+      // Get all reviews of this restaurant
+      const reviews = await Review.find({
+        restaurant: restaurant,
+      });
+
+      // Calculate total reviews
+      const totalReviews = reviews.length;
+
+      // Calculate average rating
+      const totalRating = reviews.reduce(
+        (sum, review) => sum + review.rating,
+        0,
+      );
+
+      const averageRating = totalRating / totalReviews;
+
+      // Update restaurant rating
+      await Restaurant.findByIdAndUpdate(restaurant, {
+        rating: Number(averageRating.toFixed(1)),
+        totalReviews: totalReviews,
+      });
+
+      // Remove __v from response
+      const { __v, ...result } = saveReview.toObject();
+
+      return response.status(201).json({
+        message: "Review added successfully",
+        result,
+      });
+    } catch (e) {
+      return response.status(500).json({
+        message: e.message,
+      });
+    }
+  },
+
+  getMyReviews: async (request, response) => {
+    try {
+      const reviews = await Review.find({
+        user: request.userId,
+      })
+        .populate("restaurant", "name cuisine image")
+        .sort({ createdAt: -1 });
+
+      return response.status(200).json({
+        message: "My reviews fetched successfully",
+        result: reviews,
+      });
+    } catch (e) {
+      return response.status(500).json({
+        message: e.message,
+      });
+    }
+  },
+
+  updateMyReview: async (request, response) => {
+    try {
+      const { id } = request.params;
+      const { rating, comment } = request.body;
+
+      const review = await Review.findOne({
+        _id: id,
+        user: request.userId,
+      });
+
+      if (!review) {
+        return response.status(404).json({
+          message: "Review not found",
+        });
+      }
+
+      if (rating !== undefined) {
+        if (rating < 1 || rating > 5) {
+          return response.status(400).json({
+            message: "Rating must be between 1 and 5",
+          });
         }
-    },
 
-    
-    addReviwes: async (request, response) => {
-        try{
-               const { restaurant, rating, comment } = request.body
-               
-               const restaurantExisting = await Restaurant.findById(restaurant);
+        review.rating = rating;
+      }
 
-               if (!restaurantExisting ) {
-                  return response.status(404).json({
-                     message: "Restaurant not found"
-                  });
-                }
+      if (comment !== undefined) {
+        review.comment = comment.trim();
+      }
 
-                const existingReview = await Review.findOne({
-                    user: request.userId,
-                    restaurant
-                })
+      await review.save();
 
-                if (existingReview) {
-                    return response.status(400).json({
-                       message: "You have already reviewed this restaurant"
-                    });
-                }
+      const restaurantId = review.restaurant;
 
-                const newReview = new Review({
-                    user: request.userId,
-                    restaurant,
-                    rating,
-                    comment
-                })
+      const reviews = await Review.find({
+        restaurant: restaurantId,
+      });
 
-                const saveReview = await newReview.save();
+      const totalReviews = reviews.length;
 
-                const {__v, ...result } = saveReview.toObject();
-                return response.status(201).json({message: "Reviews added successfuly", result})
-        }catch(e) {
-         return response.status(500).json({message: e.message})
+      const totalRating = reviews.reduce(
+        (sum, review) => sum + Number(review.rating),
+        0,
+      );
+
+      const averageRating = totalReviews > 0 ? totalRating / totalReviews : 0;
+
+      // Update restaurant rating
+      await Restaurant.findByIdAndUpdate(
+        restaurantId,
+        {
+          rating: Number(averageRating.toFixed(1)),
+          totalReviews: totalReviews,
+        },
+        {
+          new: true,
+        },
+      );
+      return response.status(200).json({
+        message: "Review updated successfully",
+        result: review,
+      });
+    } catch (e) {
+      return response.status(500).json({
+        message: e.message,
+      });
+    }
+  },
+
+  deleteMyReview: async (request, response) => {
+    try {
+      const { id } = request.params;
+
+      const review = await Review.findOne({
+        _id: id,
+        user: request.userId,
+      });
+
+      if (!review) {
+        return response.status(404).json({
+          message: "Review not found",
+        });
+      }
+
+      const restaurantId = review.restaurant;
+
+      await Review.findByIdAndDelete(id);
+
+      const reviews = await Review.find({
+        restaurant: restaurantId,
+      });
+
+      const totalReviews = reviews.length;
+
+      const totalRating = reviews.reduce(
+        (sum, review) => sum + review.rating,
+        0,
+      );
+
+      const averageRating = totalReviews > 0 ? totalRating / totalReviews : 0;
+
+      await Restaurant.findByIdAndUpdate(restaurantId, {
+        rating: Number(averageRating.toFixed(1)),
+        totalReviews: totalReviews,
+      });
+
+      return response.status(200).json({
+        message: "Review deleted successfully",
+      });
+    } catch (e) {
+      return response.status(500).json({
+        message: e.message,
+      });
+    }
+  },
+
+  getPaymentHistory: async (request, response) => {
+    try {
+      const payments = await Order.find({
+        user: request.userId,
+      })
+        .select(
+          "totalAmount paymentMethod paymentStatus paymentId paymentOrderId createdAt restaurant",
+        )
+        .populate("restaurant", "name")
+        .sort({ createdAt: -1 });
+
+      return response.status(200).json({
+        message: "Payment history fetched successfully",
+        result: payments,
+      });
+    } catch (e) {
+      return response.status(500).json({
+        message: e.message,
+      });
+    }
+  },
+
+  updateProfile: async (request, response) => {
+    try {
+      const { name, phone, location, notificationEnabled } = request.body;
+
+      const user = await User.findById(request.userId);
+
+      if (!user) {
+        return response.status(404).json({
+          message: "User not found",
+        });
+      }
+
+      let image = user.profilePicture || "";
+
+      if (request.file) {
+        image = `/uploads/profiles/${request.file.filename}`;
+      }
+
+      let locationData = user.location;
+
+      if (location !== undefined) {
+        try {
+          locationData =
+            typeof location === "string" ? JSON.parse(location) : location;
+        } catch (error) {
+          return response.status(400).json({
+            message: "Invalid location format",
+          });
         }
-    },
+      }
 
+      let notificationStatus = user.notificationEnabled ?? true;
 
-    updateProfile: async (request, response) => {
-        try{
-            const { name, phone, location, notificationEnabled } = request.body
+      if (notificationEnabled !== undefined) {
+        notificationStatus =
+          notificationEnabled === true || notificationEnabled === "true";
+      }
 
-            const user = await User.findById(request.userId)
+      const updatedUser = await User.findByIdAndUpdate(
+        request.userId,
+        {
+          name,
+          phone,
+          location: locationData,
+          profilePicture: image,
+          notificationEnabled: notificationStatus,
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      );
 
-             if (!user) {
-            return response.status(404).json({ message: "User not found"});
-        }
+      if (!updatedUser) {
+        return response.status(404).json({
+          message: "User not found",
+        });
+      }
 
-        let image = user.profilePicture;
+      const { password, __v, ...result } = updatedUser.toObject();
 
-        if (request.file) {
-            image = `/uploads/profiles/${request.file.filename}`;
-        }
+      return response.status(200).json({
+        message: "Profile updated successfully",
+        result,
+      });
+    } catch (e) {
+      console.log("UPDATE PROFILE ERROR:", e);
 
-        const updateProfile = await User.findByIdAndUpdate(
-            user._id,
-            {
-            name, 
-            phone, 
-            profilePicture:image,
-            location, 
-            notificationEnabled
-        }, {new: true})
+      return response.status(500).json({
+        message: e.message,
+      });
+    }
+  },
+};
 
-         const { password, __v, ...result } = updateProfile.toObject();
-
-            return response.status(200).json({message: result})
-        }catch(e) {
-         return response.status(500).json({message: e.message})
-        }
-    },
-
-    
-}
-
-module.exports = userController
+module.exports = userController;

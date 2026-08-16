@@ -12,7 +12,7 @@ restaurantRouter.use(allowRoles(["admin"]))
 
 // restaurant
 restaurantRouter.post("/", upload.single("restaurantImage"),createRestaurant)
-restaurantRouter.get("/", getAllRestaurants)
+
 
 // users
 restaurantRouter.get("/users", getAllUsers)
@@ -36,7 +36,7 @@ restaurantRouter.get("/dashboard", getDashboardStatistics)
 
 
 //  Restaurant by ID
-restaurantRouter.get("/:id", getRestaurantById)
+restaurantRouter.get("/", getAllRestaurants)
 restaurantRouter.put("/:id", updateRestaurants)
 restaurantRouter.delete("/:id", deleteRestaurants)
 

@@ -1,14 +1,15 @@
 const express = require("express");
 
-const { isAuthenticated, allowRoles } = require("../middlewares/auth");
-const { createPaymentOrder, verifyPayment } = require("../controllers/paymentController");
+const paymentController = require("../controllers/paymentController");
 
 const paymentRouter = express.Router();
 
-paymentRouter.use(isAuthenticated);
-paymentRouter.use(allowRoles(["user"]))
+// CREATE RAZORPAY ORDER
 
-paymentRouter.post("/", createPaymentOrder)
-paymentRouter.post("/verify", verifyPayment)
+paymentRouter.post("/create-order/:orderId",paymentController.createPaymentOrder);
 
-module.exports = paymentRouter
+// VERIFY RAZORPAY PAYMENT
+
+paymentRouter.post("/verify", paymentController.verifyPayment);
+
+module.exports = paymentRouter;
