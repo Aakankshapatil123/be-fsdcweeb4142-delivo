@@ -47,9 +47,9 @@ const adminController = {
 
    getAllRestaurants: async (request, response) => {
     try{
-        const restaurant = await Restaurant.find();
+        const restaurants = await Restaurant.find();
 
-        return response.status(500).json({restaurant})
+        return response.status(200).json({restaurants})
 
     }catch(e){
          return response.status(500).json({message: e.message})
@@ -152,6 +152,9 @@ const adminController = {
     getAllOrders: async (request, response) => {
         try {
             const orders = await Order.find().select("-password -__v")
+            .populate("user", "name email")
+            .populate("restaurant", "name cuisine")
+            .sort({ createdAt: -1 });
 
             return response.status(200).json({ orders });
         } catch (e) {
@@ -170,7 +173,7 @@ const adminController = {
                 return response.status(401).json({ message: "Order not found" });
             }
 
-            return response.status(200).json({ message: order });
+            return response.status(200).json({  message: "Order fetched successfully",result: order });
         } catch (e) {
             return response.status(500).json({ message: e.message });
         }

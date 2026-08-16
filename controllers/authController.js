@@ -2,7 +2,7 @@ const User = require("../models/user")
 const bcrypt = require("bcrypt")
 const { SALT_ROUNDS, JWT_SECRATE, ENV } = require("../utils/config")
 const Jwt = require("jsonwebtoken")
-const user = require("../models/user")
+// const user = require("../models/user")
 
 // setup authController as object of functions
 const authController = {
@@ -52,17 +52,7 @@ const authController = {
             if(!passwordMatch){
                  return response.status(400).json({message: "Invalid Password"})
             }
-            // response.status(200).json({message: "Login Successfuly",
-            //     user: {
-            //        id:user._id,
-            //        name: user.name,
-            //        email: user.email,
-            //        role: user.role,
-            
-            //     }
-                
-            // });
-             
+           
             const token = await Jwt.sign({ userId: user._id}, JWT_SECRATE, {expiresIn: '1h'});
 
             response.cookie("token", token,{
@@ -72,7 +62,16 @@ const authController = {
                 maxAge: 3600000 // set cookie expiration time to 1 hour
             });
            
-            return response.status(200).json({message: "User login successfuly"})
+            return response.status(200).json({message: "Login Successfuly",
+                user: {
+                   id:user._id,
+                   name: user.name,
+                   email: user.email,
+                   role: user.role,
+            
+                }
+                
+            });
         
             
         }catch(e) {

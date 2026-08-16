@@ -40,7 +40,9 @@ const userSchema = new mongoose.Schema({
         city: String,
         state: String,
         pincode: String
+        
     },
+
 
     isVerified: {
         type: Boolean,

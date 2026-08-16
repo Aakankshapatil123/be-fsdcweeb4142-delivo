@@ -2,26 +2,95 @@
 
 Create a food delivery platform with features for restaurant listings, menu browsing, and order tracking. Implement tools for secure payments, delivery scheduling, and customer feedback to provide a seamless food delivery experience.
 
-# Features
 
-- User authentication (Register/Login)
-- Restaurant listings with name, location, cuisine, hours, images, and descriptions
-- Search and filter restaurants by location, cuisine, rating, and price
-- Browse menus with categories, item details, prices, and customization options
-- Save favorite restaurants and menu items
-- Place orders with real-time order tracking and status updates
-- Delivery scheduling (instant or scheduled)
-- Secure payment gateway integration
-- Order history, payment history, and receipts
-- Customer reviews and ratings with restaurant responses
-- User profile management and notifications for orders and promotions
+# Backend
+
+The backend of **Delivo** is developed using Node.js, Express.js, MongoDB, and Mongoose. It provides RESTful APIs for authentication, restaurants, menus, orders, reviews, notifications, user profiles, admin management, and payments.
+
+# Technologies Used
+
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT Authentication
+- bcrypt
+- Multer
+- Razorpay
+- Cookie-based Authentication
+
+# Backend Features
+
+- User Registration and Login
+- JWT-based Authentication
+- Role-based Authorization
+- User Profile Management
+- Restaurant Management
+- Restaurant Owner Management
+- Menu Management
+- Food Ordering
+- Order Status Management
+- Order Tracking
+- Reviews and Ratings
+- Notifications
+- Admin Dashboard
+- User and Restaurant Management
+- Razorpay Payment Integration
+- Image Upload using Multer
+
+# User Roles
+
+The application supports three roles:
+
+- User – Browse restaurants, view menus, place orders, make payments, and submit reviews.
+- Restaurant Owner – Manage restaurant profile, menu items, and customer orders.
+- Admin – Manage users, restaurants, orders, reviews, and overall application data.
 
 
-# Techstacks needs to be used:
+### Running the Backend
 
-- MERN stack
-- TailwindCSS for styling
-- Payment Integration
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the backend server:
+
+```bash
+npm start
+```
+
+For development:
+
+```bash
+npm run dev
+```
+
+The backend server runs on:
+
+```text
+http://localhost:3001
+```
+
+# API
+
+The backend exposes REST APIs for:
+
+* Authentication
+* Users
+* Restaurants
+* Restaurant Owners
+* Menus
+* Orders
+* Reviews
+* Notifications
+* Payments
+* Admin Management
+
+All protected APIs use authentication and role-based authorization where required.
+
+
 
 
 
