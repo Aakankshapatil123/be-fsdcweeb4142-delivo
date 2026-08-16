@@ -20,7 +20,7 @@ app.use("/uploads", express.static('uploads'))
 
 // enable cros
 app.use(cros({
-    origin: "http://localhost:5173",//repace with your frontend URL
+    origin: "http://fe-fsdcweeb4142-delivo.netlify.app",//repace with your frontend URL
     credentials: true //allow cookies to be sent
 }))
 
