@@ -14,9 +14,13 @@ const adminController = {
         const restaurantExists = await Restaurant.findOne({name});
 
          // Get uploaded restaurant image
+        // const image = request.file
+        //     ? `/uploads/restaurants/${request.file.filename}`
+        //     : "";
+
         const image = request.file
-            ? `/uploads/restaurants/${request.file.filename}`
-            : "";
+        ? request.file.path
+         : "";
 
         if(restaurantExists){
             return response.status(400).json({message: "Restaurant alrady exist"})
