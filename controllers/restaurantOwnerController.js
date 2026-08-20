@@ -130,8 +130,12 @@ const restaurantOwnerController = {
       }
 
       // Keep old image if new image is not uploaded
+      // if (request.file) {
+      //   updateData.image = `/uploads/restaurants/${request.file.filename}`;
+      // }
+
       if (request.file) {
-        updateData.image = `/uploads/restaurants/${request.file.filename}`;
+        updateData.image = request.file.path;
       }
 
       const updatedRestaurant = await Restaurant.findByIdAndUpdate(
@@ -235,12 +239,18 @@ const restaurantOwnerController = {
       }
 
       // Image
+      // let image = "";
+
+      // if (request.file) {
+      //   image = `/uploads/menu/${request.file.filename}`;
+      // }
+
+
       let image = "";
 
       if (request.file) {
-        image = `/uploads/menu/${request.file.filename}`;
+        image = request.file.path;
       }
-
       // Extras
       const parsedExtras = parseJSON(extras, []);
 
@@ -548,8 +558,12 @@ const restaurantOwnerController = {
 
       // IMAGE
 
+      // if (request.file) {
+      //   updateData.image = `/uploads/menu/${request.file.filename}`;
+      // }
+
       if (request.file) {
-        updateData.image = `/uploads/menu/${request.file.filename}`;
+        updateData.image = request.file.path;
       }
 
       // UPDATE

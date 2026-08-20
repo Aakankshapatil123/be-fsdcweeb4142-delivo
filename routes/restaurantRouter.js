@@ -37,7 +37,7 @@ restaurantRouter.get("/dashboard", getDashboardStatistics)
 
 //  Restaurant by ID
 restaurantRouter.get("/", getAllRestaurants)
-restaurantRouter.put("/:id", updateRestaurants)
+restaurantRouter.put("/:id", upload.single("restaurantImage"),updateRestaurants)
 restaurantRouter.delete("/:id", deleteRestaurants)
 
 
