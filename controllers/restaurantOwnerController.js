@@ -97,7 +97,7 @@ const restaurantOwnerController = {
         openingHours,
         priceRange,
         isOpen,
-      } = request.body;
+      } = request.body || {};
 
       const updateData = {};
 
