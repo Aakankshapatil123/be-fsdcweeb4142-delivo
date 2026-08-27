@@ -57,13 +57,13 @@ const authController = {
 
             
 
-            response.cookie("token", token, {
-                httpOnly: true,
-                secure: true,
-                sameSite: "none",
-                path: "/",
-                maxAge: 3600000
-            });
+            // response.cookie("token", token, {
+            //     httpOnly: true,
+            //     secure: true,
+            //     sameSite: "none",
+            //     path: "/",
+            //     maxAge: 3600000
+            // });
            
             return response.status(200).json({message: "Login Successfuly",
                 user: {
