@@ -66,6 +66,7 @@ const authController = {
             // });
            
             return response.status(200).json({message: "Login Successfuly",
+                token: token,
                 user: {
                    id:user._id,
                    name: user.name,
