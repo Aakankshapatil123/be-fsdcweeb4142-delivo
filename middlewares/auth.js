@@ -3,7 +3,17 @@ const { JWT_SECRATE } = require("../utils/config");
 const User = require("../models/user");
 
 const isAuthenticated = async (request, response, next) => {
-    const token = request.cookies && request.cookies.token;
+    // const token = request.cookies && request.cookies.token;
+
+    const authHeader = request.headers.authorization;
+
+if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return response.status(401).json({
+        message: "User is not authenticated"
+    });
+}
+
+const token = authHeader.split(" ")[1];
 
     console.log(
     "AUTH COOKIE:",
