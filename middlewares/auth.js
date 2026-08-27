@@ -5,12 +5,21 @@ const User = require("../models/user");
 const isAuthenticated = async (request, response, next) => {
     const token = request.cookies && request.cookies.token;
 
+    console.log(
+    "AUTH COOKIE:",
+    token ? "TOKEN EXISTS" : "NO TOKEN"
+);
+
     if(!token){
         return response.status(401).json({message: "User is not athenticated"})
     }
 
     try{
+         console.log("JWT SECRET EXISTS:", !!JWT_SECRATE);
         const decoded = await jwt.verify(token, JWT_SECRATE)
+
+        console.log("JWT VERIFIED:", decoded.userId);
+       
 
         const userId = decoded.userId
 
@@ -19,6 +28,7 @@ const isAuthenticated = async (request, response, next) => {
         next()
 
     }catch(e){
+         console.log("JWT VERIFY ERROR:", e.message);
         return response.status(401).json({message: "Unauthoeized access"})
     }
 }
