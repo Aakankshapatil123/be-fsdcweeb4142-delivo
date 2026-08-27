@@ -55,11 +55,14 @@ const authController = {
            
             const token = await Jwt.sign({ userId: user._id}, JWT_SECRATE, {expiresIn: '1h'});
 
-            response.cookie("token", token,{
+            
+
+            response.cookie("token", token, {
                 httpOnly: true,
-                secure: ENV === 'production', // set secure flag only in production
-                sameSite: ENV === 'production' ? 'none' : 'lax', // set sameSite flag based on environment
-                maxAge: 3600000 // set cookie expiration time to 1 hour
+                secure: true,
+                sameSite: "none",
+                path: "/",
+                maxAge: 3600000
             });
            
             return response.status(200).json({message: "Login Successfuly",
@@ -98,13 +101,20 @@ const authController = {
     // logout
     logout: async (request, response) => {
         try{
-            response.clearCookie('token', {
-                httpOnly: true,
-                 secure: ENV === 'production',
-                sameSite: ENV === 'production' ? "none": 'lax',
-                maxAge: 3600000
+            // response.clearCookie('token', {
+            //     httpOnly: true,
+            //      secure: ENV === 'production',
+            //     sameSite: ENV === 'production' ? "none": 'lax',
+            //     maxAge: 3600000
 
-            })
+            // })
+
+            response.clearCookie("token", {
+               httpOnly: true,
+               secure: true,
+               sameSite: "none",
+               path: "/"
+            });
             return response.status(200).json({message: "User logout Successfuly"})
             
         }catch(e) {
