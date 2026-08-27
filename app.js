@@ -19,14 +19,31 @@ const app = express();
 app.use("/uploads", express.static('uploads'))
 
 // enable cros
-app.use(cros({
-    origin: [
-        "http://localhost:5173",
-        "https://inquisitive-cocada-3b939f.netlify.app",
+// app.use(cros({
+//     origin: [
+//         "http://localhost:5173",
+//         "https://inquisitive-cocada-3b939f.netlify.app",
         
-    ],//repace with your frontend URL
-    credentials: true //allow cookies to be sent
-}))
+//     ],//repace with your frontend URL
+//     credentials: true //allow cookies to be sent
+// }))
+
+
+app.use(cros({
+    origin: (origin, callback) => {
+        const allowedOrigins = [
+            "http://localhost:5173",
+            "https://inquisitive-cocada-3b939f.netlify.app"
+        ];
+
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true
+}));
 
 // parse cookies
 app.use(cookieParser());
