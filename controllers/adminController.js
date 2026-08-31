@@ -185,7 +185,7 @@ const adminController = {
         });
       }
 
-      // Hash password
+      
     
 
       // Create normal user
@@ -247,6 +247,7 @@ const adminController = {
        const deletedUser = await User.findByIdAndDelete(id);
 
        if (!deletedUser) {
+
       return response.status(404).json({
         message: "User not found",
       });
