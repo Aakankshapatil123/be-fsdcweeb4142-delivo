@@ -247,9 +247,16 @@ const adminController = {
     try {
       const { id } = request.params;
 
-      const deleteUser = await User.findById(id);
+       const deletedUser = await User.findByIdAndDelete(id);
 
-      return response.status(200).json({ message: "delete company endpoint" });
+
+        if (!deletedUser) {
+      return response.status(404).json({
+        message: "User not found",
+      });
+    }
+
+      return response.status(200).json({ message: "delete user endpoint" });
     } catch (e) {
       return response.status(500).json({ message: e.message });
     }
