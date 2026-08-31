@@ -1,6 +1,6 @@
 const express = require("express");
 const { isAuthenticated, allowRoles } = require("../middlewares/auth");
-const { createRestaurant, getAllRestaurants, getRestaurantById, updateRestaurants, deleteRestaurants, getAllUsers, getUserById, deleteUser, getAllOrders, updateOrderStatus, getOrderById, getAllReviews, deleteReview,  getDashboardStatistics } = require("../controllers/adminController");
+const { createRestaurant, getAllRestaurants, getRestaurantById, updateRestaurants, deleteRestaurants, getAllUsers, getUserById, deleteUser, getAllOrders, updateOrderStatus, getOrderById, getAllReviews, deleteReview,  getDashboardStatistics, createRestaurantOwner } = require("../controllers/adminController");
 
 const upload = require("../middlewares/Upload")
 
@@ -12,6 +12,9 @@ restaurantRouter.use(allowRoles(["admin"]))
 
 // restaurant
 restaurantRouter.post("/", upload.single("restaurantImage"),createRestaurant)
+// restaurant owner
+
+restaurantRouter.post("/restaurant-owners/create", createRestaurantOwner);
 
 
 // users

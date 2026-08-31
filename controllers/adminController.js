@@ -115,6 +115,44 @@ const adminController = {
         }
     },
 
+    createRestaurantOwner: async (request, response) => {
+    try {
+        const { name, email, password, phone } = request.body;
+
+        // Check if user already exists
+        const userExists = await User.findOne({ email });
+
+        if (userExists) {
+            return response.status(400).json({
+                message: "User with this email already exists"
+            });
+        }
+
+        // Create restaurant owner
+        const newOwner = new User({
+            name,
+            email,
+            password,
+            phone,
+            role: "restaurant"
+        });
+
+        const savedOwner = await newOwner.save();
+
+        const { password: _, __v, ...result } = savedOwner.toObject();
+
+        return response.status(201).json({
+            message: "Restaurant owner created successfully",
+            result
+        });
+
+    } catch (e) {
+        return response.status(500).json({
+            message: e.message
+        });
+    }
+},
+
     getAllUsers: async (request, response) => {
         try {
             const users = await User.find().select("-password -__v");
