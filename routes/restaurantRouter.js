@@ -1,6 +1,6 @@
 const express = require("express");
 const { isAuthenticated, allowRoles } = require("../middlewares/auth");
-const { createRestaurant, getAllRestaurants, getRestaurantById, updateRestaurants, deleteRestaurants, getAllUsers, getUserById, deleteUser, getAllOrders, updateOrderStatus, getOrderById, getAllReviews, deleteReview,  getDashboardStatistics, createRestaurantOwner } = require("../controllers/adminController");
+const { createRestaurant, getAllRestaurants, getRestaurantById, updateRestaurants, deleteRestaurants, getAllUsers, getUserById, deleteUser, getAllOrders, updateOrderStatus, getOrderById, getAllReviews, deleteReview,  getDashboardStatistics, createRestaurantOwner, createUser } = require("../controllers/adminController");
 
 const upload = require("../middlewares/Upload")
 
@@ -19,6 +19,7 @@ restaurantRouter.post("/restaurant-owners/create", createRestaurantOwner);
 
 // users
 restaurantRouter.get("/users", getAllUsers)
+restaurantRouter.post("/users/create", createUser)
 restaurantRouter.get("/users/:id", getUserById)
 restaurantRouter.delete("/users/:id", deleteUser)
 
