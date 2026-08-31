@@ -2,8 +2,7 @@ const Restaurant = require("../models/restaurant");
 const User = require("../models/user");
 const Order = require("../models/order");
 const Review = require("../models/review");
-const bcrypt = require("bcrypt");
-const { SALT_ROUNDS } = require("../utils/config");
+
 
 const adminController = {
   createRestaurant: async (request, response) => {
@@ -147,15 +146,13 @@ const adminController = {
         });
       }
 
-      const hashedPassword = await bcrypt.hash(password, parseInt(SALT_ROUNDS));
-
       
 
       // Create restaurant owner
       const newOwner = new User({
         name,
         email,
-        password: hashedPassword,
+        password,
         phone,
         role: "restaurant",
       });
@@ -189,13 +186,13 @@ const adminController = {
       }
 
       // Hash password
-      const hashedPassword = await bcrypt.hash(password, parseInt(SALT_ROUNDS));
+    
 
       // Create normal user
       const newUser = new User({
         name,
         email,
-        password: hashedPassword,
+        password,
         phone,
         role: "user",
       });
@@ -247,9 +244,15 @@ const adminController = {
     try {
       const { id } = request.params;
 
-      const deleteUser = await User.findById(id);
+       const deletedUser = await User.findByIdAndDelete(id);
 
-      return response.status(200).json({ message: "delete company endpoint" });
+       if (!deletedUser) {
+      return response.status(404).json({
+        message: "User not found",
+      });
+    }
+
+      return response.status(200).json({ message: "delete user endpoint" });
     } catch (e) {
       return response.status(500).json({ message: e.message });
     }
