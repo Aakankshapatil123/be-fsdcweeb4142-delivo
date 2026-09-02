@@ -19,6 +19,7 @@ const authController = {
 
             const hashPassword = await bcrypt.hash(password, parseInt(SALT_ROUNDS))
 
+
             const newUser = new User({
                 name,
                 email,
@@ -32,6 +33,7 @@ const authController = {
             return response.status(200).json({message: "User Register Successfuly"})
             
         }catch(e) {
+            console.log("REGISTER ERROR:", e);
             return response.status(500).json({message: e.message})
         }
     },
@@ -48,6 +50,7 @@ const authController = {
             }
 
             const passwordMatch = await bcrypt.compare(password, user.password)
+
 
             if(!passwordMatch){
                  return response.status(400).json({message: "Invalid Password"})
